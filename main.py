@@ -1,8 +1,9 @@
+import pandas as pd
 import streamlit as st
 
 import charts
 import processing
-
+import state
 
 st.set_page_config(
     page_title="RP3 data viewer",
@@ -20,6 +21,7 @@ if uploaded_file is None:
     st.stop()
 
 df = processing.load_rp3_json(uploaded_file)
+state = state.get_state(snapshots=pd.DataFrame())
 
 df = processing.filter_data(df)
 
@@ -35,13 +37,18 @@ else:
     normalize = st.checkbox("Normalize forces")
 
 force_columns = processing.get_force_columns(df, normalize=normalize)
-force_mean = force_columns.mean()
-force_std = force_columns.std()
 
 
 if what_to_plot == "All force curves":
-    fig = charts.plot_all(force_columns, normalize=normalize)
+    charts.plot_all(force_columns, normalize=normalize)
 else:
-    fig = charts.plot_average(force_columns, normalize=normalize)
+    charts.plot_average(force_columns, normalize=normalize)
 
-st.pyplot(fig=fig)
+with st.form("Save snapshot"):
+    snapshot_name = st.text_input("Snapshot name")
+    submitted = st.form_submit_button(label="Save snapshot")
+    if submitted:
+        state.snapshots[snapshot_name] = force_columns.mean()
+
+if not state.snapshots.empty:
+    charts.plot_multiple(state.snapshots)
