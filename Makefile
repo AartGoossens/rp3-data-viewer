@@ -4,9 +4,9 @@ build:
 serve:
 	docker-compose -f docker/docker-compose.yml up
 
-deploy_dev: export VERSION=0.1.0
+deploy: export VERSION=0.1.0
 
-deploy_dev: build
+deploy: build
 	gcloud config configurations activate gssns
 	gcloud config set project gssns-generic-310412
 	docker tag rp3-data-viewer:latest gcr.io/gssns-generic-310412/rp3-data-viewer:latest
