@@ -23,7 +23,7 @@ if uploaded_file is None:
 df = processing.load_rp3_json(uploaded_file)
 state = state.get_state(snapshots=pd.DataFrame())
 
-df = processing.filter_data(df)
+df, filter_config = processing.filter_data(df)
 
 what_to_plot = st.radio(
     label="What to plot",
@@ -54,10 +54,17 @@ with st.form("Save snapshot"):
         - Compare the average force curves in the chart below
         """
     )
-    snapshot_name = st.text_input("Snapshot name")
+
+    default_snapshot_name = processing.create_snapshot_name(filter_config)
+    snapshot_name = st.text_input("Snapshot name", value=default_snapshot_name)
     submitted = st.form_submit_button(label="Save snapshot")
     if submitted:
         state.snapshots[snapshot_name] = force_columns.mean()
 
+if st.button("Clear snapshots"):
+    state.snapshots = pd.DataFrame()
+
 if not state.snapshots.empty:
     charts.plot_multiple(state.snapshots)
+else:
+    st.write("No snapshots created yet")

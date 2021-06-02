@@ -6,20 +6,27 @@ import streamlit as st
 
 RP3_FORCE_MEASUREMENT_INTERVAL = 2.2225  # In centimeters.
 
+DEFAULT_MIN_STROKE_RATE = 0
+DEFAULT_MAX_STROKE_RATE = 100
+DEFAULT_MIN_POWER = 0
+DEFAULT_MAX_POWER = 1500
+DEFAULT_MIN_HEART_RATE = 0
+DEFAULT_MAX_HEART_RATE = 250
+
 
 def filter_data(data):
-    min_stroke_rate = 0
-    max_stroke_rate = 100
-    min_power = 0
-    max_power = 1500
-    min_heart_rate = 0
-    max_heart_rate = 250
+    min_stroke_rate = DEFAULT_MIN_STROKE_RATE
+    max_stroke_rate = DEFAULT_MAX_STROKE_RATE
+    min_power = DEFAULT_MIN_POWER
+    max_power = DEFAULT_MAX_POWER
+    min_heart_rate = DEFAULT_MIN_HEART_RATE
+    max_heart_rate = DEFAULT_MAX_HEART_RATE
     with st.beta_expander("Filter data", expanded=True):
         min_stroke_rate, max_stroke_rate = st.slider(
             label="Select a stroke rate range",
             min_value=0,
             max_value=100,
-            value=(0, 100),
+            value=(DEFAULT_MIN_STROKE_RATE, DEFAULT_MAX_STROKE_RATE),
             format="%s/min",
         )
 
@@ -27,7 +34,7 @@ def filter_data(data):
             label="Select a power range",
             min_value=0,
             max_value=1500,
-            value=(0, 1500),
+            value=(DEFAULT_MIN_POWER, DEFAULT_MAX_POWER),
             format="%iW",
         )
 
@@ -35,7 +42,7 @@ def filter_data(data):
             label="Select an heart rate range",
             min_value=0,
             max_value=250,
-            value=(0, 250),
+            value=(DEFAULT_MIN_HEART_RATE, DEFAULT_MAX_HEART_RATE),
             format="%i bpm",
         )
 
@@ -44,7 +51,15 @@ def filter_data(data):
         data["power"].between(min_power, max_power) & \
         data["pulse"].between(min_heart_rate, max_heart_rate)
     ]
-    return filtered_data
+    filter_config = {
+        "min_stroke_rate": min_stroke_rate,
+        "max_stroke_rate": max_stroke_rate,
+        "min_power": min_power,
+        "max_power": max_power,
+        "min_heart_rate": min_heart_rate,
+        "max_heart_rate": max_heart_rate,
+    }
+    return filtered_data, filter_config
 
 
 def extract_force_curves(df):
@@ -86,3 +101,35 @@ def get_force_columns(data, normalize=False):
         force_columns = force_columns.apply(func=lambda x: x / x.max(), axis="columns")
 
     return force_columns
+
+def _create_single_snapshot_name(filter_config, name):
+    title = name.replace("_", " ")
+    min_value = filter_config[f"min_{name}"]
+    max_value = filter_config[f"max_{name}"]
+    if min_value != globals()[f"DEFAULT_MIN_{name.upper()}"]:
+        if max_value != globals()[f"DEFAULT_MAX_{name.upper()}"]:
+            filter_name = f"{min_value}<={title}<={max_value}"
+        else:
+            filter_name = f"{title}>={min_value}"
+    elif max_value != globals()[f"DEFAULT_MAX_{name.upper()}"]:
+        filter_name = f"{title}<={max_value}"
+    else:
+        filter_name = None
+    return filter_name
+
+
+def create_snapshot_name(filter_config):
+    bits = []
+    names = {i[4:] for i in filter_config.keys()}
+
+    for name in names:
+        single_snapshot_name = _create_single_snapshot_name(filter_config, name)
+        if single_snapshot_name is not None:
+            bits.append(single_snapshot_name)
+
+    if bits:
+        snapshot_name = ", ".join(bits)
+    else:
+        snapshot_name = "all data"
+
+    return snapshot_name
