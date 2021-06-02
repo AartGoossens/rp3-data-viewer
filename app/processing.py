@@ -14,7 +14,7 @@ def filter_data(data):
     max_power = 1500
     min_heart_rate = 0
     max_heart_rate = 250
-    with st.beta_expander("Filter data"):
+    with st.beta_expander("Filter data", expanded=True):
         min_stroke_rate, max_stroke_rate = st.slider(
             label="Select a stroke rate range",
             min_value=0,

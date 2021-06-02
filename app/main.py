@@ -45,6 +45,15 @@ else:
     charts.plot_average(force_columns, normalize=normalize)
 
 with st.form("Save snapshot"):
+    st.markdown(
+        """
+        # Comparison
+        - Filter the data with the sliders at the top
+        - Give the snapshot a name
+        - Save the snapshot
+        - Compare the average force curves in the chart below
+        """
+    )
     snapshot_name = st.text_input("Snapshot name")
     submitted = st.form_submit_button(label="Save snapshot")
     if submitted:
