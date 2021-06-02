@@ -16,11 +16,23 @@ st.markdown(
     """
 )
 
-uploaded_file = st.file_uploader("Select an RP3 .json file")
-if uploaded_file is None:
-    st.stop()
+data_source = st.radio(
+    label="Data source",
+    options=["Upload RP3 .json file", "Demo file"],
+    index=0,
+)
 
-df = processing.load_rp3_json(uploaded_file)
+if data_source == "Demo file":
+    with open("demo.json", "r") as f:
+        df = processing.load_rp3_json(f)
+else:
+    uploaded_file = st.file_uploader("Select an RP3 .json file")
+
+    if uploaded_file is None:
+        st.stop()
+
+    df = processing.load_rp3_json(uploaded_file)
+
 state = state.get_state(snapshots=pd.DataFrame())
 
 df, filter_config = processing.filter_data(df)

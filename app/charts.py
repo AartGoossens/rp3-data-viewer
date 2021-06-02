@@ -80,7 +80,7 @@ def plot_multiple(data, normalize=False):
         ax.set_ylim(bottom=0)
     ax.set_xlim(left=0)
 
-    ax.set_title(f"RP3 force curve with 1 standard deviation\n(n={len(data)})")
+    ax.set_title(f"RP3 force curves")
     ax.set_xlabel("Drive length [cm]")
     if normalize:
         ax.set_ylabel("normalized force [-]")
