@@ -70,7 +70,7 @@ def plot_all(data, normalize=False):
 def plot_multiple(data, normalize=False):
     fig = plt.figure()
     ax = plt.axes()
-    ax.set_prop_cycle(color=get_cmap("Accent").colors)
+    ax.set_prop_cycle(color=get_cmap("tab10").colors)
     for c in data.columns:
         ax.plot(data.index, data[c], label=c)
 
